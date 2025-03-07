@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strings"
 
 	"github.com/gabdlr/api-cuit-go/rate_limit"
 )
@@ -21,12 +20,12 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 
 	errorResponse := &CuitError{Error: "Fallo exitosamente"}
 	argument := r.URL.Path
-
+	//fmt.Printf("%v\n", cuit.ValidateWithVerifierDigit(cuit.StandardizeCuit(argument[1:])))
 	if len(argument) == 1 {
 		errorResponse.Error = NO_SEARCH_ARG
 	} else {
-		remoteAddr := (strings.Split(r.RemoteAddr, ":"))[0]
-		timeLeft := rate_limit.TimeLeft(remoteAddr)
+		argument = argument[1:]
+		timeLeft := rate_limit.TimeLeft(r.RemoteAddr)
 
 		if timeLeft > 0 {
 			errorResponse.Error = fmt.Sprintf("Recurso no disponible, debe esperar %v segundos", timeLeft)
