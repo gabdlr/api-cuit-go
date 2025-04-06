@@ -3,7 +3,6 @@ package cuit
 import (
 	"regexp"
 	"strconv"
-	"strings"
 
 	"github.com/gabdlr/api-cuit-go/utils"
 )
@@ -18,19 +17,12 @@ var CUIT_TYPES = map[uint8]bool{
 
 func IsValid(cuit string) (isValidCuit bool) {
 	if validateFormat(cuit) {
-		cuit = standardizeCuit(cuit)
+		cuit = utils.StandardizeCuit(cuit)
 		if validateCuitType(cuit) {
 			isValidCuit = validateWithVerifierDigit(cuit)
 		}
 	}
 	return isValidCuit
-}
-
-func standardizeCuit(cuit string) string {
-	if len(cuit) > 11 {
-		cuit = strings.ReplaceAll(cuit, "-", "")
-	}
-	return cuit
 }
 
 func validateWithVerifierDigit(cuit string) bool {

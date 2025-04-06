@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"strings"
 	"sync"
+
+	"github.com/gabdlr/api-cuit-go/utils"
 )
 
 type Address struct {
@@ -39,7 +41,7 @@ const htmlOfInterestEnd = `</tbody`
 const exitSignal = "No se encuentran resultados"
 
 func Search(cuit string) ([]byte, error) {
-	url := fmt.Sprintf("https://argentina.gob.ar/justicia/registro-nacional-sociedades?cuit=%s&razon=", standardizeCuit(cuit))
+	url := fmt.Sprintf("https://argentina.gob.ar/justicia/registro-nacional-sociedades?cuit=%s&razon=", utils.StandardizeCuit(cuit))
 
 	res, err := http.Get(url)
 	if err != nil {
