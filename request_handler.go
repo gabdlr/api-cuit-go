@@ -20,7 +20,7 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 
-	errorResponse := &CuitError{Error: "Fallo exitosamente"}
+	errorResponse := &CuitError{Error: "ocurrió un error"}
 	argument := r.URL.Path
 	if len(argument) == 1 {
 		errorResponse.Error = NO_SEARCH_ARG
@@ -29,21 +29,22 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 		timeLeft := rate_limit.TimeLeft(r.RemoteAddr)
 
 		if timeLeft > 0 {
-			errorResponse.Error = fmt.Sprintf("Recurso no disponible, debe esperar %v segundos", timeLeft)
-		}
-		if cuit.IsValid(argument) {
-			cRes, cErr := cache.Search(argument)
-			if cErr == nil {
-				w.Write(cRes)
-				return
-			}
-			res, err := cuit.Search(argument)
-			if err == nil {
-				cache.Save(argument, res)
-				w.Write(res)
-				return
-			} else {
-				errorResponse.Error = err.Error()
+			errorResponse.Error = fmt.Sprintf("recurso no disponible, debe esperar %v segundos", timeLeft)
+		} else {
+			if cuit.IsValid(argument) {
+				cRes, cErr := cache.Search(argument)
+				if cErr == nil {
+					w.Write(cRes)
+					return
+				}
+				res, err := cuit.Search(argument)
+				if err == nil {
+					cache.Save(argument, res)
+					w.Write(res)
+					return
+				} else {
+					errorResponse.Error = err.Error()
+				}
 			}
 		}
 	}
