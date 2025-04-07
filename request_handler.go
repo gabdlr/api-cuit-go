@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/gabdlr/api-cuit-go/cache"
+	"github.com/gabdlr/api-cuit-go/cuit"
 	"github.com/gabdlr/api-cuit-go/rate_limit"
 )
 
@@ -20,7 +22,6 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 
 	errorResponse := &CuitError{Error: "Fallo exitosamente"}
 	argument := r.URL.Path
-	//fmt.Printf("%v\n", cuit.ValidateWithVerifierDigit(cuit.StandardizeCuit(argument[1:])))
 	if len(argument) == 1 {
 		errorResponse.Error = NO_SEARCH_ARG
 	} else {
@@ -29,6 +30,21 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 
 		if timeLeft > 0 {
 			errorResponse.Error = fmt.Sprintf("Recurso no disponible, debe esperar %v segundos", timeLeft)
+		}
+		if cuit.IsValid(argument) {
+			cRes, cErr := cache.Search(argument)
+			if cErr == nil {
+				w.Write(cRes)
+				return
+			}
+			res, err := cuit.Search(argument)
+			if err == nil {
+				cache.Save(argument, res)
+				w.Write(res)
+				return
+			} else {
+				errorResponse.Error = err.Error()
+			}
 		}
 	}
 
